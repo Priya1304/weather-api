@@ -1,0 +1,14 @@
+server:
+    port: 8081
+spring:
+    application:
+        name: weather-api
+
+myList: system,admib
+
+api:
+  apiKeys: 521c6bc368f45024e808037bbc5926c5,c12d5729c47e40fac71889805db9488e,a2bb897ca0dce9e9fef10e091f3cfd37,42e7bb01ed11b8139cf006e735e1c502,5e23765da16164e9b19092c0b59262d2
+
+
+
+
