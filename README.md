@@ -44,6 +44,8 @@ WeatherService - It calls the Open Weather API via REST, fetches and saves detai
 ##Steps to run
 
 The project is executable. It can be checked out and run.
+TO RUN: Run the java/com/sampleproject/weatherapi/WeatherApiApplication.java
+The application starts on port 8081(This is the port specified in application.yaml file)
 There is one endpoint exposed at part of this sample.
 The endpoint is GET endpoint.
 Validation is added on the city name, country name and API KEY
