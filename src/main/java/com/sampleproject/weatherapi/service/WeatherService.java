@@ -93,7 +93,7 @@ public class WeatherService {
     private WeatherData fetchAndMapWeatherData(final String name) throws Exception {
         log.info("Query name : {} ", name);
 
-        List<WeatherDataEntity> weatherData = weatherRepository.findByNameOrderByDtDesc(name);
+        List<WeatherDataEntity> weatherData = weatherRepository.findByNameIgnoreCaseOrderByDtDesc(name);
         log.info("Queried weatherData: {} ", weatherData);
         if (!isNull(weatherData)) {
             return transformEntityToDTO(weatherData);
@@ -139,7 +139,7 @@ public class WeatherService {
             String description = weatherDataEntity.get(0).getWeather().get(0).getDescription();
 
             return WeatherData.builder()
-                    .description(description).build();
+                    .weather_description(description).build();
         } catch (Exception e) {
             throw new Exception();
         }

@@ -7,5 +7,5 @@ import lombok.Data;
 @Builder
 public class WeatherData {
 
-    private String description;
+    private String weather_description;
 }
