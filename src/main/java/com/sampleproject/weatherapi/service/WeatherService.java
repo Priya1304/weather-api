@@ -1,10 +1,8 @@
 package com.sampleproject.weatherapi.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.sampleproject.weatherapi.error.WeatherErrorResponse;
-import com.sampleproject.weatherapi.model.dto.WeatherDataDTO;
-import com.sampleproject.weatherapi.model.entity.Weather;
+import com.sampleproject.weatherapi.model.entity.WeatherDataEntity;
 import com.sampleproject.weatherapi.model.response.WeatherData;
+import com.sampleproject.weatherapi.repository.CoordinatesRepository;
 import com.sampleproject.weatherapi.repository.WeatherRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,7 +13,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Service
@@ -24,32 +24,43 @@ public class WeatherService {
 
     private WeatherRepository weatherRepository;
 
+    private CoordinatesRepository coordinatesRepository;
+
     private RestTemplate restTemplate;
 
-    private static final String DESCRIPTION_FIELD_PATH = "/weather/0/description";
     private static final String URI_STRING ="api.openweathermap.org/data/2.5/weather";
 
     public WeatherService(final WeatherRepository weatherRepository,
+                          final  CoordinatesRepository coordinatesRepository,
                           final RestTemplate restTemplate) {
         this.weatherRepository = weatherRepository;
         this.restTemplate = restTemplate;
+        this.coordinatesRepository = coordinatesRepository;
     }
 
+    /**
+     * This method gets the current weather details by calling Open Weather Map API.
+     * The details of API are stored into H2 Database and the required attributes are then queried from H2 database.
+     * @param city
+     * @param country
+     * @param apiKey
+     * @return WeatherData response with description
+     * @throws Exception
+     */
     public ResponseEntity<?> getCurrentWeather(final String city,
                                                final String country,
                                                final String apiKey) throws Exception {
         try {
-            log.info("Calling OpenWeatherMap API to get current weather");
-            ResponseEntity<WeatherDataDTO> response = restTemplate
-                    .getForEntity(buildOpenWeatherMapURI(city, country, apiKey), JsonNode.class);
+            log.info("Calling OpenWeatherMap API to get the current weather");
+            ResponseEntity<WeatherDataEntity> response = restTemplate
+                    .getForEntity(buildOpenWeatherMapURI(city, country, apiKey), WeatherDataEntity.class);
             log.info("Response received from OpenWeatherMap: {}", response);
             if (nonNull(response) && response.hasBody() ) {
-                JsonNode responseBody = response.getBody();
+                WeatherDataEntity responseBody = response.getBody();
                 if (response.getStatusCode().is2xxSuccessful()) {
                     Boolean isSaved =saveWeatherData(responseBody);
                     if (isSaved) {
-                        return ResponseEntity.status(response.getStatusCode()).body(mapWeatherData(responseBody));
-                        //return queryAndFetchWeatherData();
+                        return ResponseEntity.status(response.getStatusCode()).body(fetchAndMapWeatherData(city));
                     }
                 }
                 return ResponseEntity.status(response.getStatusCode()).body(responseBody);
@@ -63,17 +74,41 @@ public class WeatherService {
         throw new Exception();
     }
 
-    private ResponseEntity<?> queryAndFetchWeatherData() {
-        return null;
+
+    /**
+     * Save the weather data from Open Weather API to H2 database.
+     * @param weatherDataEntity
+     * @return not null if data is saved
+     */
+    private Boolean saveWeatherData(WeatherDataEntity weatherDataEntity) {
+        return weatherRepository.save(weatherDataEntity) != null;
     }
 
-    private Boolean saveWeatherData(JsonNode responseBody) {
-        final String weatherDescription = responseBody.isMissingNode() ? null :
-                responseBody.at(DESCRIPTION_FIELD_PATH).asText();
-        Weather weatherEntity = Weather.builder().description(weatherDescription).build();
-        return weatherRepository.save(weatherEntity) != null;
+    /**
+     * Queries H2 database to fetch weather data. Map weather data entity to DTO
+     * @param name
+     * @return Weather data with description
+     * @throws Exception
+     */
+    private WeatherData fetchAndMapWeatherData(final String name) throws Exception {
+        log.info("Query name : {} ", name);
+
+        List<WeatherDataEntity> weatherData = weatherRepository.findByNameOrderByDtDesc(name);
+        log.info("Queried weatherData: {} ", weatherData);
+        if (!isNull(weatherData)) {
+            return transformEntityToDTO(weatherData);
+        }
+        throw new Exception();
+
     }
 
+    /**
+     * Forms the URI to call the Open Weather API
+     * @param city
+     * @param country
+     * @param apiKey
+     * @return URI
+     */
     private URI buildOpenWeatherMapURI(final String city,
                                        final String country,
                                        final String apiKey) {
@@ -87,26 +122,29 @@ public class WeatherService {
                 .buildAndExpand(city,country,apiKey)
                 .toUri();
 
-        log.info("uri  : {}", uri);
+        log.info("The URI is: {}", uri);
         return  uri;
     }
 
-    private WeatherData mapWeatherData(final JsonNode responseBody) {
-        final String weatherDescription = responseBody.isMissingNode() ? null :
-                responseBody.at(DESCRIPTION_FIELD_PATH).asText();
-        log.info("Response weatherDescription {}", weatherDescription);
-        return WeatherData.builder()
-                .description(weatherDescription).build();
+
+    /**
+     * Transform the Weather Data Entity to DTO
+     * @param weatherDataEntity
+     * @return
+     * @throws Exception
+     */
+    private WeatherData transformEntityToDTO(final List<WeatherDataEntity> weatherDataEntity) throws Exception {
+
+        try {
+            String description = weatherDataEntity.get(0).getWeather().get(0).getDescription();
+
+            return WeatherData.builder()
+                    .description(description).build();
+        } catch (Exception e) {
+            throw new Exception();
+        }
 
 
-    }
-
-    private WeatherErrorResponse formErrorResponse(final String code,
-                                                   final String message) {
-        return WeatherErrorResponse.builder()
-                .cod(code)
-                .message(message)
-                .build();
     }
 
 

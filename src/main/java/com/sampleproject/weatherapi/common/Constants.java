@@ -14,6 +14,9 @@ public final class Constants {
     public static final String UNAUTHORIZED_API_KEY_MESSAGE = "Invalid API key.";
     public static final String UNAUTHORIZED_API_KEY_ERROR_CODE= "401";
 
+    public static final String TOO_MANY_REQUESTS_MESSAGE = "TOO many request";
+    public static final String TOO_MANY_REQUESTS_ERROR_CODE= "401";
+
 
 
 }

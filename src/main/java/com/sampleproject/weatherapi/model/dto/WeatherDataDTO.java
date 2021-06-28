@@ -1,21 +1,21 @@
 package com.sampleproject.weatherapi.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WeatherDataDTO {
 
-    private Coordinates coord;
+    private CoordinatesDTO coord;
 
     private List<Weather>  weather;
 
