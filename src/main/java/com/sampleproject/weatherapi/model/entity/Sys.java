@@ -14,19 +14,19 @@ import javax.persistence.*;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
-@Table(name = "weather")
-public class Weather {
+@Table(name = "sys")
+public class Sys {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer wid;
+    private Integer sysId;
 
-    private Integer id;
+    private Integer type;
 
-    private String main;
+    private String country;
 
-    private String description;
+    private Long sunrise;
 
-    private String icon;
+    private Long sunset;
 
 }
