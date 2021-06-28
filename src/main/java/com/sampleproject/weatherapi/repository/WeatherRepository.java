@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface WeatherRepository extends JpaRepository<WeatherDataEntity, Integer> {
 
-    List<WeatherDataEntity> findByNameOrderByDtDesc(@Param("name")String name);
+    List<WeatherDataEntity> findByNameIgnoreCaseOrderByDtDesc(@Param("name")String name);
 
 
 
