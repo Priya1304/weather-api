@@ -13,7 +13,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @Entity
-@Table(name = "weatherdata")
+@Table(name = "weather_data")
 public class WeatherDataEntity {
 
     @Id
@@ -40,7 +40,17 @@ public class WeatherDataEntity {
     @JoinColumn(name = "weather_id", nullable = false)
     private List<Weather> weather;
 
-    //@JoinColumn(name = "coordinates_id", referencedColumnName = "id")
+    @OneToOne(fetch = FetchType.LAZY, optional = false, cascade= CascadeType.ALL)
+    @JoinColumn(name = "main_id", nullable = false)
+    private WeatherMain main;
+
+    @OneToOne(fetch = FetchType.LAZY, optional = false, cascade= CascadeType.ALL)
+    @JoinColumn(name = "wind_id", nullable = false)
+    private Wind wind;
+
+    @OneToOne(fetch = FetchType.LAZY, optional = false, cascade= CascadeType.ALL)
+    @JoinColumn(name = "sys_id", nullable = false)
+    private Sys sys;
 
 
 }
